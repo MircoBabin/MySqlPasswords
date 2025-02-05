@@ -3,9 +3,10 @@
 # MySql Passwords
 MySql Passwords is a tool for calculating the MySql hash of mysql_native_password and caching_sha2_password password plugins. This is the authentication_string field in the mysql.user table.
 
-# Programming language
+# Programming languages
 
 - [Documentation for C#.](docs/CSharp.md)
+- [Documentation for Php.](docs/Php.md)
 
 # Why
 
