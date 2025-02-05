@@ -5,7 +5,7 @@ MySql Passwords is a tool for calculating the MySql hash of mysql_native_passwor
 
 # Programming language
 
-- [Documentation for C#](src/CSharp/MySqlPassword/MySqlCredentials.cs). Adjust the namespace and include it in your project.
+- [Documentation for C#](docs/CSharp.cs). Adjust the namespace and include it in your project.
 
 # Why
 
