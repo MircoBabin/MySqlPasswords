@@ -1,7 +1,7 @@
-# KeePass Commander
+# MySqlPasswords
 ## MIT license 
 
-Copyright (c) 2018 Mirco Babin
+Copyright (c) 2025 Mirco Babin
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
