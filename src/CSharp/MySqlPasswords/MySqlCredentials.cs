@@ -139,39 +139,20 @@ namespace MySqlServer
         {
             StringBuilder sql = new StringBuilder();
 
-            if (passwordPluginType == MySqlPluginType.default_with_password_in_plaintext)
-            {
-                sql.Append("IDENTIFIED BY ");
-                sql.Append(GetSqlForStringLiteral(getPasswordAsString()));
-
-                return sql.ToString();
-            }
-
-            sql.Append("IDENTIFIED WITH ");
-
             switch (passwordPluginType)
             {
-                case MySqlPluginType.mysql_native_password:
-                    sql.Append("mysql_native_password");
+                case MySqlPluginType.default_with_password_in_plaintext:
+                    sql.Append("IDENTIFIED BY ");
+                    sql.Append(GetSqlForStringLiteral(getPasswordAsString()));
                     break;
 
-                case MySqlPluginType.caching_sha2_password:
-                    sql.Append("caching_sha2_password");
-                    break;
-
-                default:
-                    throw new Exception("Unknown PluginType: " + passwordPluginType.ToString());
-            }
-
-            sql.Append(" AS ");
-
-            switch (passwordPluginType)
-            {
                 case MySqlPluginType.mysql_native_password:
+                    sql.Append("IDENTIFIED WITH mysql_native_password AS ");
                     sql.Append(AsMysqlNativePassword());
                     break;
 
                 case MySqlPluginType.caching_sha2_password:
+                    sql.Append("IDENTIFIED WITH caching_sha2_password AS ");
                     sql.Append(AsCachingSha2Password(usingSalt));
                     break;
 
@@ -184,14 +165,17 @@ namespace MySqlServer
 
         public string GetSqlForStringLiteral(string value)
         {
+            if (string.IsNullOrEmpty(value))
+                return "''";
+
             // prevent sql injection - https://dev.mysql.com/doc/refman/8.4/en/string-literals.html
             StringBuilder result = new StringBuilder();
 
             result.Append("'");
 
-            foreach(var ch in value)
+            foreach (var ch in value)
             {
-                switch(ch)
+                switch (ch)
                 {
                     case '\0':
                         result.Append("\\0");
@@ -242,11 +226,6 @@ namespace MySqlServer
 
             byte[] passwordBytes = Encoding.ASCII.GetBytes(getPasswordAsString());
             byte[] hashBytes = sha1.ComputeHash(sha1.ComputeHash(passwordBytes));
-
-            // Begin: Cleanup memory
-            RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
-            rngCsp.GetBytes(passwordBytes);
-            // End: Cleanup memory
 
             return GetSqlForStringLiteral("*" + BitConverter.ToString(hashBytes).Replace("-", String.Empty).ToUpperInvariant());
         }
@@ -446,23 +425,7 @@ namespace MySqlServer
                 throw new Exception("AsCachingSha2Password - b64_result must be " + STORED_SHA256_DIGEST_LENGTH + " bytes, but is " + b64_result.Length + ".");
 
             //
-            // Step 9 - overwrite memory contents (only keep b64_result);
-            //
-            // Begin: Cleanup memory
-            RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
-            rngCsp.GetBytes(passwordBytes);
-            rngCsp.GetBytes(digest_b);
-            rngCsp.GetBytes(digest_a);
-            rngCsp.GetBytes(digest_dp);
-            rngCsp.GetBytes(sequence_p);
-            rngCsp.GetBytes(digest_ds);
-            rngCsp.GetBytes(sequence_s);
-            rngCsp.GetBytes(digest_c);
-            rngCsp.GetBytes(tmpBytes);
-            // End: Cleanup memory
-
-            //
-            // Step 10 - table "mysql.user", field "authentication_string" output
+            // Step 9 - table "mysql.user", field "authentication_string" output
             //
 
             /*
@@ -531,20 +494,19 @@ namespace MySqlServer
             }
         }
 
-
-        private readonly byte[] _randomAsciiSalt_AllowedBytes = new byte[]
+        private static readonly byte[] _randomAsciiSalt_AllowedBytes = new byte[]
         {
-            // SALT bytes in ASCII range (and therefore also UTF-8) 0x20 - 0x7E with the exception of:
-            // - DELIMITER $ (0x24)
-            // - QUOTE ' (0x27) to prevent escaping problems.
-            // - BACKSLASH \ (0x5c) to prevent escaping problems.
-            // 92 bytes
-            0x20, 0x21, 0x22, 0x23, /*$*/ 0x25, 0x26, /*'*/ 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
-            0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
-            0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
-            0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, /*\*/ 0x5d, 0x5e, 0x5f,
-            0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
-            0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e,
+                // SALT bytes in ASCII range (and therefore also UTF-8) 0x20 - 0x7E with the exception of:
+                // - DELIMITER $ (0x24)
+                // - QUOTE ' (0x27) to prevent escaping problems.
+                // - BACKSLASH \ (0x5c) to prevent escaping problems.
+                // 92 bytes
+                0x20, 0x21, 0x22, 0x23, /*$*/ 0x25, 0x26, /*'*/ 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
+                0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+                0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+                0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, /*\*/ 0x5d, 0x5e, 0x5f,
+                0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
+                0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e,
         };
         private byte[] randomAsciiSalt(uint length)
         {
@@ -575,6 +537,32 @@ namespace MySqlServer
             return result;
         }
 
+        private static readonly byte[] _B64Encode_Table = new byte[]
+        {
+            // ('.', '/', '0' ..'9', 'A' .. 'Z', 'a' .. 'z')
+            0x2e, 0x2f,
+
+            0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
+
+            0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f, 0x50,
+            0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a,
+
+            0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f, 0x70,
+            0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a,
+        };
+        private byte[] B64Encode(int valueToConvertToB64, int n)
+        {
+            // returns bytes in ASCII range (and therefore also UTF-8)
+            var encoded = new byte[n];
+            for (var i = 0; i < n; i++)
+            {
+                encoded[i] = _B64Encode_Table[valueToConvertToB64 & 0x3f];
+                valueToConvertToB64 >>= 6;
+            }
+
+            return encoded;
+        }
+
         private byte[] sliceBytes(byte[] bytes, int offset, int count)
         {
             byte[] result = new byte[count];
@@ -602,30 +590,9 @@ namespace MySqlServer
             return result;
         }
 
-        private readonly byte[] _concatB64Encode_Table = new byte[]
-        {
-            // ('.', '/', '0' ..'9', 'A' .. 'Z', 'a' .. 'z')
-            0x2e, 0x2f,
-
-            0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
-
-            0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f, 0x50,
-            0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a,
-
-            0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f, 0x70,
-            0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a,
-        };
         private byte[] concatB64Encode(byte[] bytes, int valueToConvertToB64, int n)
         {
-            // returns bytes in ASCII range (and therefore also UTF-8)
-            var encoded = new byte[n];
-            for (var i = 0; i < n; i++)
-            {
-                encoded[i] = _concatB64Encode_Table[valueToConvertToB64 & 0x3f];
-                valueToConvertToB64 >>= 6;
-            }
-
-            return concatBytes(bytes, encoded);
+            return concatBytes(bytes, B64Encode(valueToConvertToB64, n));
         }
     }
 }

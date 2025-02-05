@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MySqlPasswords
 {
@@ -85,7 +82,7 @@ namespace MySqlPasswords
             string salt = null;
 
             if (args.Length >= 4)
-            { 
+            {
                 if (args[2] == "-host")
                     host = args[3];
                 else if (args[2] == "-salt")
@@ -100,7 +97,7 @@ namespace MySqlPasswords
                     salt = args[5];
             }
 
-            var credentials = new MySqlServer.MySqlCredentials(username, password, MySqlServer.MySqlCredentials.PasswordType.NotSensitive);
+            var credentials = new MySqlServer.MySqlCredentials(username, password, MySqlServer.MySqlCredentials.PasswordType.Sensitive);
             credentials.host = host;
             OutputPassword(null,
                 credentials, MySqlServer.MySqlCredentials.MySqlPluginType.caching_sha2_password, salt);
