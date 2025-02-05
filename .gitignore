@@ -1,0 +1,12 @@
+/bin
+/obj
+/.vs
+src/bin
+src/obj
+src/.vs
+src/CSharp/bin
+src/CSharp/obj
+src/CSharp/.vs
+src/CSharp/MySqlPasswords/bin
+src/CSharp/MySqlPasswords/obj
+src/CSharp/MySqlPasswords/.vs
