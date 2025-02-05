@@ -94,7 +94,7 @@ namespace MySqlServer
             return sql.ToString();
         }
 
-        public string GetSqlForCreateUser(bool AddIfNotExists, MySqlPluginType passwordPluginType, byte[] usingSalt)
+        public string GetSqlForCreateUser(bool AddIfNotExists, MySqlPluginType passwordPluginType, byte[] usingSalt = null)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -109,7 +109,7 @@ namespace MySqlServer
             return sql.ToString();
         }
 
-        public string GetSqlForAlterUserPassword(bool AddIfExists, MySqlPluginType passwordPluginType, byte[] usingSalt)
+        public string GetSqlForAlterUserPassword(bool AddIfExists, MySqlPluginType passwordPluginType, byte[] usingSalt = null)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -135,7 +135,7 @@ namespace MySqlServer
             return sql.ToString();
         }
 
-        public string GetSqlForIdentifiedWithAs(MySqlPluginType passwordPluginType, byte[] usingSalt)
+        public string GetSqlForIdentifiedWithAs(MySqlPluginType passwordPluginType, byte[] usingSalt = null)
         {
             StringBuilder sql = new StringBuilder();
 
