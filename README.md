@@ -6,6 +6,7 @@ MySql Passwords is a tool for calculating the MySql hash of mysql_native_passwor
 # Programming languages
 
 - [Documentation for C#.](docs/CSharp.md)
+- [Documentation for Delphi.](docs/Delphi.md)
 - [Documentation for Php.](docs/Php.md)
 
 # Why
