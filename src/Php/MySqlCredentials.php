@@ -217,10 +217,10 @@ class MySqlCredentials
 
     public function AsMysqlNativePassword()
     {
-        $passwordBytes = $this->password;
-        $hashBytes = hash('sha1', hash('sha1', $passwordBytes, true), true);
+        $passwordBytes = $this->ComputeStringToUtf8WithoutBom($this->password);
+        $hashBytes = $this->ComputeSha1($this->ComputeSha1($passwordBytes));
 
-        return $this->GetSqlForStringLiteral('*'.strtoupper(bin2hex($hashBytes)));
+        return $this->GetSqlForStringLiteral('*'.$this->ComputeBytesToUpperCaseHex($hashBytes));
     }
 
     private const AUTHENTICATION_STRING_DELIMITER = 0x24; // $
@@ -278,7 +278,7 @@ class MySqlCredentials
 
         $saltBytes = $this->GenerateSaltForCachingSha2Password($usingSalt);
 
-        $passwordBytes = $this->password;
+        $passwordBytes = $this->ComputeStringToUtf8WithoutBom($this->password);
 
         $hashBits = 256; // SHA256 output bits
         $hashBytes = $hashBits / 8; // 32
@@ -287,7 +287,7 @@ class MySqlCredentials
         // Step 1 - digest_b
         //
         $tmpBytes = $passwordBytes.$saltBytes.$passwordBytes;
-        $digest_b = hash('sha256', $tmpBytes, true);
+        $digest_b = $this->ComputeSha256($tmpBytes);
 
         //
         // Step 2 - digest_a
@@ -312,7 +312,7 @@ class MySqlCredentials
             }
         }
 
-        $digest_a = hash('sha256', $tmpBytes, true);
+        $digest_a = $this->ComputeSha256($tmpBytes);
 
         //
         // Step 3 - digest_dp
@@ -324,7 +324,7 @@ class MySqlCredentials
             $tmpBytes .= $passwordBytes;
         }
 
-        $digest_dp = hash('sha256', $tmpBytes, true);
+        $digest_dp = $this->ComputeSha256($tmpBytes);
 
         //
         // Step 4 - sequence_p
@@ -347,7 +347,7 @@ class MySqlCredentials
             $tmpBytes .= $saltBytes;
         }
 
-        $digest_ds = hash('sha256', $tmpBytes, true);
+        $digest_ds = $this->ComputeSha256($tmpBytes);
 
         //
         // Step 6 - sequence_s
@@ -385,7 +385,7 @@ class MySqlCredentials
                 $tmpBytes .= $sequence_p;
             }
 
-            $digest_c = hash('sha256', $tmpBytes, true);
+            $digest_c = $this->ComputeSha256($tmpBytes);
         }
 
         //
@@ -455,7 +455,7 @@ class MySqlCredentials
             $saltBytes.$b64_result;
 
         // return 0xAA... uppercase hex string
-        return '0x'.strtoupper(bin2hex($tmpBytes));
+        return '0x'.$this->ComputeBytesToUpperCaseHex($tmpBytes);
     }
 
     private function randomAsciiSalt($length)
@@ -482,14 +482,18 @@ class MySqlCredentials
 
         $result = '';
 
-        $_randomByte = '';
-        $_random = '';
+        $_randomPool = '';
+        $_randomPoolIdx = 0;
 
         $idx = 0;
         while ($idx < $length) {
-            $_randomByte = random_bytes(1);
-            $_random = ord(substr($_randomByte, 0, 1));
-
+            if ($_randomPoolIdx >= strlen($_randomPool)) {
+                $_randomPool = $this->ComputeSecureRandomBytes($length);
+                $_randomPoolIdx = 0;
+            }
+            $_random = ord(substr($_randomPool, $_randomPoolIdx, 1));
+            $_randomPoolIdx++;
+            
             if ($_random <= $maxUnbiased) {
                 $result .= chr($_randomAsciiSalt_AllowedBytes[$_random % count($_randomAsciiSalt_AllowedBytes)]);
                 ++$idx;
@@ -523,5 +527,31 @@ class MySqlCredentials
         }
 
         return $encoded;
+    }
+    
+    private function ComputeBytesToUpperCaseHex($valueBytes)
+    {
+        return strtoupper(bin2hex($valueBytes));
+    }
+    
+    private function ComputeStringToUtf8WithoutBom($value)
+    {
+        // A "string" in Php is actually an array of bytes.
+        return strval($value);
+    }
+    
+    private function ComputeSha1($valueBytes)
+    {
+        return hash('sha1', $valueBytes, true);
+    }
+    
+    private function ComputeSha256($valueBytes)
+    {
+        return hash('sha256', $valueBytes, true);
+    }
+    
+    private function ComputeSecureRandomBytes($length)
+    {
+        return random_bytes($length);
     }
 }
