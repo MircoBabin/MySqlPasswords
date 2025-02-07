@@ -128,11 +128,21 @@ namespace MySqlServer
         {
             StringBuilder sql = new StringBuilder();
 
-            sql.Append(GetSqlForStringLiteral(username));
+            sql.Append(GetSqlForUsername());
             sql.Append("@");
-            sql.Append(GetSqlForStringLiteral(host));
+            sql.Append(GetSqlForHost());
 
             return sql.ToString();
+        }
+
+        public string GetSqlForUsername()
+        {
+            return GetSqlForStringLiteral(username);
+        }
+
+        public string GetSqlForHost()
+        {
+           return GetSqlForStringLiteral(host);
         }
 
         public string GetSqlForIdentifiedWithAs(MySqlPluginType passwordPluginType, byte[] usingSalt = null)

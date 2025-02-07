@@ -120,11 +120,21 @@ class MySqlCredentials
     {
         $sql = '';
 
-        $sql .= $this->GetSqlForStringLiteral($this->username);
+        $sql .= $this->GetSqlForUsername();
         $sql .= '@';
-        $sql .= $this->GetSqlForStringLiteral($this->host);
+        $sql .= $this->GetSqlForHost();
 
         return $sql;
+    }
+
+    public function GetSqlForUsername()
+    {
+        return $this->GetSqlForStringLiteral($this->username);
+    }
+
+    public function GetSqlForHost()
+    {
+        return $this->GetSqlForStringLiteral($this->host);
     }
 
     public function GetSqlForIdentifiedWithAs($passwordPluginType, $usingSalt = null)

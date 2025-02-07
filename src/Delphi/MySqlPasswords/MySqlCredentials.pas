@@ -80,6 +80,8 @@ public
     function GetSqlForAlterUserPassword(AddIfExists : boolean; passwordPluginType : TMySqlPluginType; usingSalt : TBytes = nil) : string;
     
     function GetSqlForUsernameAtHost() : string;
+    function GetSqlForUsername() : string;
+    function GetSqlForHost() : string;
     function GetSqlForIdentifiedWithAs(passwordPluginType : TMySqlPluginType; usingSalt : TBytes = nil) : string;
     function GetSqlForStringLiteral(value : string) : string;
     
@@ -160,11 +162,21 @@ function TMySqlCredentials.GetSqlForUsernameAtHost() : string;
 var sql : string;
 begin
     sql := '';
-    sql := sql + GetSqlForStringLiteral(Fusername);
+    sql := sql + GetSqlForUsername();
     sql := sql + '@';
-    sql := sql + GetSqlForStringLiteral(Fhost);
+    sql := sql + GetSqlForHost();
 
     Result := sql;    
+end;
+
+function TMySqlCredentials.GetSqlForUsername() : string;
+begin
+    Result := GetSqlForStringLiteral(Fusername);
+end;
+
+function TMySqlCredentials.GetSqlForHost() : string;
+begin
+    Result := GetSqlForStringLiteral(Fhost);
 end;
 
 function TMySqlCredentials.GetSqlForIdentifiedWithAs(passwordPluginType : TMySqlPluginType; usingSalt : TBytes = nil) : string;
