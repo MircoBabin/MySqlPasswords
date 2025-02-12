@@ -503,7 +503,7 @@ class MySqlCredentials
             }
             $_random = ord(substr($_randomPool, $_randomPoolIdx, 1));
             $_randomPoolIdx++;
-            
+
             if ($_random <= $maxUnbiased) {
                 $result .= chr($_randomAsciiSalt_AllowedBytes[$_random % count($_randomAsciiSalt_AllowedBytes)]);
                 ++$idx;
@@ -538,28 +538,28 @@ class MySqlCredentials
 
         return $encoded;
     }
-    
+
     private function ComputeBytesToUpperCaseHex($valueBytes)
     {
         return strtoupper(bin2hex($valueBytes));
     }
-    
+
     private function ComputeStringToUtf8WithoutBom($value)
     {
         // A "string" in Php is actually an array of bytes.
         return strval($value);
     }
-    
+
     private function ComputeSha1($valueBytes)
     {
         return hash('sha1', $valueBytes, true);
     }
-    
+
     private function ComputeSha256($valueBytes)
     {
         return hash('sha256', $valueBytes, true);
     }
-    
+
     private function ComputeSecureRandomBytes($length)
     {
         return random_bytes($length);

@@ -1,6 +1,6 @@
 ﻿/*
 MySqlPasswords
-https://github.com/MircoBabin/MySqlPasswords - MIT license 
+https://github.com/MircoBabin/MySqlPasswords - MIT license
 
 Copyright (c) 2025 Mirco Babin
 

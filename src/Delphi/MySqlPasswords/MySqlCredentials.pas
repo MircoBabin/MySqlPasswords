@@ -74,27 +74,27 @@ private
 
 public
     constructor Create(username : string; password : string; passwordtype : TPasswordType);
-    
+
     function GetSqlForDropUser(AddIfExists : boolean) : string;
     function GetSqlForCreateUser(AddIfNotExists : boolean; passwordPluginType : TMySqlPluginType; usingSalt : TBytes = nil) : string;
     function GetSqlForAlterUserPassword(AddIfExists : boolean; passwordPluginType : TMySqlPluginType; usingSalt : TBytes = nil) : string;
-    
+
     function GetSqlForUsernameAtHost() : string;
     function GetSqlForUsername() : string;
     function GetSqlForHost() : string;
     function GetSqlForIdentifiedWithAs(passwordPluginType : TMySqlPluginType; usingSalt : TBytes = nil) : string;
     function GetSqlForStringLiteral(value : string) : string;
-    
+
     function AsMysqlNativePassword() : string;
     function GenerateSaltForCachingSha2Password(usingSalt : string = '') : TBytes; overload;
     function GenerateSaltForCachingSha2Password(usingSalt : TBytes = nil) : TBytes; overload;
     function AsCachingSha2Password(usingSalt : TBytes = nil) : string;
-    
+
     property username : string read Fusername write Fusername;
     property host : string read Fhost write Fhost;
     property password : string read Fpassword write Fpassword;
     property passwordtype : TPasswordType read Fpasswordtype write Fpasswordtype;
-    
+
     property sslCaCertFilename : string read FsslCaCertFilename write FsslCaCertFilename;
     property sslClientCertFilename : string read FsslClientCertFilename write FsslClientCertFilename;
     property sslClientKeyFilename : string read FsslClientKeyFilename write FsslClientKeyFilename;
@@ -109,7 +109,7 @@ begin
     Fhost := '%';
     Fpassword := password;
     Fpasswordtype := passwordtype;
-    
+
     FsslCaCertFilename := '';
     FsslClientCertFilename := '';
     FsslClientKeyFilename := '';
@@ -125,9 +125,9 @@ begin
     sql := sql + GetSqlForUsernameAtHost();
     sql := sql + ';';
 
-    Result := sql;    
+    Result := sql;
 end;
-    
+
 function TMySqlCredentials.GetSqlForCreateUser(AddIfNotExists : boolean; passwordPluginType : TMySqlPluginType; usingSalt : TBytes = nil) : string;
 var sql : string;
 begin
@@ -140,7 +140,7 @@ begin
     sql := sql + GetSqlForIdentifiedWithAs(passwordPluginType, usingSalt);
     sql := sql + ';';
 
-    Result := sql;    
+    Result := sql;
 end;
 
 function TMySqlCredentials.GetSqlForAlterUserPassword(AddIfExists : boolean; passwordPluginType : TMySqlPluginType; usingSalt : TBytes = nil) : string;
@@ -155,7 +155,7 @@ begin
     sql := sql + GetSqlForIdentifiedWithAs(passwordPluginType, usingSalt);
     sql := sql + ';';
 
-    Result := sql;    
+    Result := sql;
 end;
 
 function TMySqlCredentials.GetSqlForUsernameAtHost() : string;
@@ -166,7 +166,7 @@ begin
     sql := sql + '@';
     sql := sql + GetSqlForHost();
 
-    Result := sql;    
+    Result := sql;
 end;
 
 function TMySqlCredentials.GetSqlForUsername() : string;
@@ -183,7 +183,7 @@ function TMySqlCredentials.GetSqlForIdentifiedWithAs(passwordPluginType : TMySql
 var sql : string;
 begin
     sql := '';
-    
+
     case passwordPluginType of
         TMySqlPluginType.default_with_password_in_plaintext:
             begin
@@ -208,8 +208,8 @@ begin
                 raise Exception.Create('Unknown PluginType: ' + GetEnumName(TypeInfo(TMySqlPluginType), Integer(passwordPluginType)));
             end;
     end;
-    
-    Result := sql;    
+
+    Result := sql;
 end;
 
 function TMySqlCredentials.GetSqlForStringLiteral(value : string) : string;
@@ -221,64 +221,64 @@ begin
             Result := '''''';
             Exit;
         end;
-        
+
     // prevent sql injection - https://dev.mysql.com/doc/refman/8.4/en/string-literals.html
     Result := '';
 
     Result := Result + '''';
-    
+
     for i:=1 to Length(value) do
     begin
         ch := value[i];
-        
+
         case ch of
             #0:
                 begin
                     Result := Result + '\0';
                 end;
-                
+
             '''':
                 begin
                     Result := Result + '\''';
                 end;
-                
+
             #8:
                 begin
                     Result := Result + '\b';
                 end;
-                
+
             #10:
                 begin
                     Result := Result + '\n';
                 end;
-                
+
             #13:
                 begin
                     Result := Result + '\r';
                 end;
-                
+
             #9:
                 begin
                     Result := Result + '\t';
                 end;
-                
+
             #26:  // ctrl-z EOF
                 begin
                     Result := Result + '\Z';
                 end;
-                
+
             '\':
                 begin
                     Result := Result + '\\';
                 end;
-                
+
             else
                 begin
                     Result := Result + ch;
                 end;
         end;
     end;
-    
+
     Result := Result + '''';
 end;
 
@@ -316,14 +316,14 @@ begin
             Result := randomAsciiSalt(SALT_LENGTH);
             Exit;
         end;
-        
+
     if (Length(usingSalt) <> SALT_LENGTH) then
         raise Exception.Create('usingSalt must be ' + IntToStr(SALT_LENGTH) + ' bytes, but is ' + IntToStr(Length(usingSalt)) + ' bytes.');
-    
+
     for i:=Low(usingSalt) to High(usingSalt) do
     begin
         b := usingSalt[i];
-        
+
         if ((b < $20) or (b > $7e)) then
             raise Exception.Create('usingSalt must be in ASCII range [0x20 .. 0x7e], but contains 0x' + LowerCase(IntToHex(b, 2)));
 
@@ -336,7 +336,7 @@ begin
         if (b = $5c) then
             raise Exception.Create('usingSalt must not contain BACKSLASH 0x5c (\).');
     end;
-    
+
     Result := usingSalt;
 end;
 
@@ -383,7 +383,7 @@ begin
     //
     tmpBytes := concatBytes(passwordBytes, saltBytes, passwordBytes);
     digest_b := ComputeSha256(tmpBytes);
-    
+
     //
     // Step 2 - digest_a
     //
@@ -397,7 +397,7 @@ begin
             tmpBytes := concatBytes(tmpBytes, digest_b)
         else
             tmpBytes := concatBytes(tmpBytes, sliceBytes(digest_b, 0, i));
-            
+
         i := i - hashBytes;
     end;
 
@@ -409,34 +409,34 @@ begin
             tmpBytes := concatBytes(tmpBytes, digest_b)
         else
             tmpBytes := concatBytes(tmpBytes, passwordBytes);
-            
+
         i := i div 2;
     end;
 
     digest_a := ComputeSha256(tmpBytes);
-    
+
     //
     // Step 3 - digest_dp
     //
 
     // For every character in the password add the entire password.
     tmpBytes := nil;
-    
+
     i := 0;
     while(i < Length(passwordBytes)) do
     begin
         tmpBytes := concatBytes(tmpBytes, passwordBytes);
-        
+
         i := i + 1;
     end;
 
     digest_dp := ComputeSha256(tmpBytes);
-    
+
     //
     // Step 4 - sequence_p
     //
     sequence_p := nil;
-    
+
     i := Length(passwordBytes);
     while (i > 0) do
     begin
@@ -444,7 +444,7 @@ begin
             sequence_p := concatBytes(sequence_p, digest_dp)
         else
             sequence_p := concatBytes(sequence_p, sliceBytes(digest_dp, 0, i));
-            
+
         i := i - hashBytes;
     end;
 
@@ -453,12 +453,12 @@ begin
     //
     tmpBytes := nil;
     til := 16 + digest_a[0];
-    
+
     i := 0;
     while (i < til) do
     begin
         tmpBytes := concatBytes(tmpBytes, saltBytes);
-        
+
         i := i + 1;
     end;
 
@@ -468,7 +468,7 @@ begin
     // Step 6 - sequence_s
     //
     sequence_s := nil;
-    
+
     i := Length(saltBytes);
     while (i > 0) do
     begin
@@ -476,15 +476,15 @@ begin
             sequence_s := concatBytes(sequence_s, digest_ds)
         else
             sequence_s := concatBytes(sequence_s, sliceBytes(digest_ds, 0, i));
-            
+
         i := i - hashBytes;
     end;
-    
+
     //
     // Step 7 - now we do iterations into digest_c
     //
     digest_c := concatBytes(digest_a, nil);
-    
+
     i := 0;
     while (i < (iterations * ITERATION_MULTIPLIER)) do
     begin
@@ -502,10 +502,10 @@ begin
             tmpBytes := concatBytes(tmpBytes, sequence_p);
 
         digest_c := ComputeSha256(tmpBytes);
-        
+
         i := i + 1;
     end;
-    
+
     //
     // Step 8 - b64_result
     //
@@ -587,14 +587,14 @@ const _randomAsciiSalt_AllowedBytes : array[0..91] of byte = (
 //  92 .. 183
 // 184 .. 275 !!! bias, because the random range is 0..255 (a byte). The values 256..275 don't have a chance to get choosen.
 const maxUnbiased : cardinal = 183;
-    
+
 var _randomPool : TBytes;
     _randomPoolIdx : cardinal;
     _random : byte;
     idx : cardinal;
 begin
     SetLength(Result, len);
-    
+
     _randomPool := nil;
     _randomPoolIdx := 0;
 
@@ -615,7 +615,7 @@ begin
                 idx := idx + 1;
             end;
     end;
-end;    
+end;
 
 function TMySqlCredentials.B64Encode(valueToConvertToB64 : integer; n : integer) : TBytes;
 const _B64Encode_Table : array[0..63] of byte = (
@@ -641,7 +641,7 @@ begin
     begin
         encoded[i] := _B64Encode_Table[valueToConvertToB64 and $3f];
         valueToConvertToB64 := valueToConvertToB64 shr 6;
-        
+
         i := i + 1;
     end;
 
@@ -685,7 +685,7 @@ var sha1 : THashSha1;
 begin
     sha1 := THashSha1.Create();
     sha1.Update(value, Length(value));
-    
+
     Result := sha1.HashAsBytes();
 end;
 
@@ -694,7 +694,7 @@ var sha256 : THashSha2;
 begin
     sha256 := THashSha2.Create(THashSha2.TSHA2Version.SHA256);
     sha256.Update(value, Length(value));
-    
+
     Result := sha256.HashAsBytes();
 end;
 
