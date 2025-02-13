@@ -11,8 +11,6 @@ const NewLine = #13#10;
 
 procedure OutputHelp();
 begin
-    WriteLn('MySqlPasswords 1.0');
-    WriteLn('');
     WriteLn('usage:');
     WriteLn('MySqlPasswords username password {-host %} {-salt caching-sha2-salt-20-characters}');
     WriteLn('');
@@ -78,6 +76,10 @@ var username : string;
     salt : string;
     credentials : TMySqlCredentials;
 begin
+    WriteLn('MySqlPasswords 1.0');
+    WriteLn('https://github.com/MircoBabin/MySqlPasswords - MIT license');
+    WriteLn('');
+
     if (Length(args) < 2) then
     begin
         OutputHelp();

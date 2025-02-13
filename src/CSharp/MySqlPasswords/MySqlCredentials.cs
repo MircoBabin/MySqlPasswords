@@ -26,6 +26,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*
+Version: 13 february 2025
+*/
+
 using System;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -283,9 +287,6 @@ namespace MySqlServer
 
         public string AsCachingSha2Password(byte[] usingSalt = null)
         {
-            // https://crypto.stackexchange.com/questions/77427/whats-the-algorithm-behind-mysqls-sha256-password-hashing-scheme
-            // select user,host,convert(authentication_string using binary),plugin from mysql.user;
-
             const int ITERATION_MULTIPLIER = 1000;
             //const int MAX_ITERATIONS = 100000;
 
@@ -434,31 +435,6 @@ namespace MySqlServer
             //
             // Step 9 - table "mysql.user", field "authentication_string" output
             //
-
-            /*
-                https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/sql/auth/sha2_password.cc#L404
-
-                From stored string, following parts are retrieved:
-                Digest type
-                Salt
-                Iteration count
-                hash
-
-                Expected format
-                DELIMITER[digest_type]DELIMITER[iterations]DELIMITER[salt][digest]
-
-                digest_type:
-                A => SHA256
-
-                iterations:
-                005 => 5*ITERATION_MULTIPLIER
-
-                salt:
-                Random string. Length SALT_LENGTH
-
-                digest:
-                SHA2 digest. Length STORED_SHA256_DIGEST_LENGTH
-            */
 
             tmpBytes = new byte[7];
             tmpBytes[0] = AUTHENTICATION_STRING_DELIMITER; // $

@@ -7,8 +7,6 @@ namespace MySqlPasswords
     {
         private static void OutputHelp()
         {
-            Console.Out.WriteLine("MySqlPasswords 1.0");
-            Console.Out.WriteLine();
             Console.Out.WriteLine("usage:");
             Console.Out.WriteLine("MySqlPasswords username password {-host %} {-salt caching-sha2-salt-20-characters}");
             Console.Out.WriteLine();
@@ -70,6 +68,10 @@ namespace MySqlPasswords
 
         static void Main(string[] args)
         {
+            Console.Out.WriteLine("MySqlPasswords 1.0");
+            Console.Out.WriteLine("https://github.com/MircoBabin/MySqlPasswords - MIT license");
+            Console.Out.WriteLine();
+
             if (args.Length < 2)
             {
                 OutputHelp();

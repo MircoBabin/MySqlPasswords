@@ -27,6 +27,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*
+Version: 13 february 2025
+
+Minimal Php 7 version is required.
+*/
+
 namespace MySqlServer;
 
 class MySqlCredentials
@@ -276,9 +282,6 @@ class MySqlCredentials
 
     public function AsCachingSha2Password($usingSalt = null)
     {
-        // https://crypto.stackexchange.com/questions/77427/whats-the-algorithm-behind-mysqls-sha256-password-hashing-scheme
-        // select user,host,convert(authentication_string using binary),plugin from mysql.user;
-
         $ITERATION_MULTIPLIER = 1000;
         // $MAX_ITERATIONS = 100000;
 
@@ -429,38 +432,13 @@ class MySqlCredentials
         // Step 9 - table "mysql.user", field "authentication_string" output
         //
 
-        /*
-            https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/sql/auth/sha2_password.cc#L404
-
-            From stored string, following parts are retrieved:
-            Digest type
-            Salt
-            Iteration count
-            hash
-
-            Expected format
-            DELIMITER[digest_type]DELIMITER[iterations]DELIMITER[salt][digest]
-
-            digest_type:
-            A => SHA256
-
-            iterations:
-            005 => 5*ITERATION_MULTIPLIER
-
-            salt:
-            Random string. Length SALT_LENGTH
-
-            digest:
-            SHA2 digest. Length STORED_SHA256_DIGEST_LENGTH
-        */
-
         $tmpBytes =
             chr(self::AUTHENTICATION_STRING_DELIMITER). // $
             chr(0x41). // A
             chr(self::AUTHENTICATION_STRING_DELIMITER). // $
             chr(0x30 + (intdiv($iterations, 100) % 10)). // 0
             chr(0x30 + (intdiv($iterations, 10) % 10)).  // 0
-            chr(0x30 + (($iterations) % 10)).           // 5
+            chr(0x30 + (($iterations) % 10)).            // 5
             chr(self::AUTHENTICATION_STRING_DELIMITER). // $
             $saltBytes.$b64_result;
 
@@ -502,7 +480,7 @@ class MySqlCredentials
                 $_randomPoolIdx = 0;
             }
             $_random = ord(substr($_randomPool, $_randomPoolIdx, 1));
-            $_randomPoolIdx++;
+            ++$_randomPoolIdx;
 
             if ($_random <= $maxUnbiased) {
                 $result .= chr($_randomAsciiSalt_AllowedBytes[$_random % count($_randomAsciiSalt_AllowedBytes)]);

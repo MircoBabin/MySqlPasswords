@@ -4,8 +4,6 @@ require_once __DIR__.'/MySqlCredentials.php';
 
 function OutputHelp()
 {
-    echo 'MySqlPasswords 1.0'.PHP_EOL;
-    echo PHP_EOL;
     echo 'usage:'.PHP_EOL;
     echo 'MySqlPasswords username password {-host %} {-salt caching-sha2-salt-20-characters}'.PHP_EOL;
     echo PHP_EOL;
@@ -79,6 +77,10 @@ function OutputPlainPassword($credentials)
 
 function Main($args)
 {
+    echo 'MySqlPasswords 1.0'.PHP_EOL;
+    echo 'https://github.com/MircoBabin/MySqlPasswords - MIT license'.PHP_EOL;
+    echo PHP_EOL;
+
     if (count($args) < 2) {
         OutputHelp();
         exit(99);
