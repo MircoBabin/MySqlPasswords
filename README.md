@@ -1,3 +1,4 @@
+[![Github All Releases](https://img.shields.io/github/downloads/MircoBabin/MySqlPasswords/total)](https://github.com/MircoBabin/MySqlPasswords/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MircoBabin/MySqlPasswords/blob/master/LICENSE.md)
 
 # MySql Passwords
