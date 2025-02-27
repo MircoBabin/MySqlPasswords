@@ -27,7 +27,7 @@ sql.AppendLine(credentials.GetSqlForAlterUser(false, MySqlServer.MySqlCredential
 
 # Installation
 
-Include [MySqlCredentials.cs](../src/CSharp/MySqlPasswords/MySqlCredentials.cs) in your project. And maybe adjust the namespace.
+Include [MySqlCredentials.cs](https://github.com/MircoBabin/MySqlPasswords/releases/latest/download/MySqlCredentials-CSharp.zip) in your project. And maybe adjust the namespace.
 
 # Extra fields
 

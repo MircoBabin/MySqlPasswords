@@ -31,7 +31,7 @@ end;
 
 # Installation
 
-Include [MySqlCredentials.pas](../src/Delphi/MySqlPasswords/MySqlCredentials.pas) in your project.
+Include [MySqlCredentials.pas](https://github.com/MircoBabin/MySqlPasswords/releases/latest/download/MySqlCredentials-Delphi.zip) in your project.
 
 # Extra fields
 

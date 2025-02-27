@@ -28,7 +28,7 @@ $sql .= $credentials.GetSqlForAlterUser(false, \MySqlServer\MySqlCredentials::My
 
 # Installation
 
-Include [MySqlCredentials.php](../src/Php/MySqlCredentials.php) in your project. And maybe adjust the namespace.
+Include [MySqlCredentials.php](https://github.com/MircoBabin/MySqlPasswords/releases/latest/download/MySqlCredentials-Php.zip) in your project. And maybe adjust the namespace.
 
 # Extra fields
 
